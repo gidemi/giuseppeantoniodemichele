@@ -617,36 +617,46 @@ footer{border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:cente
   });
 })();
 
-// --- VISITOR COUNTER ---
+// --- VISITOR COUNTER (condiviso tra tutti i visitatori) ---
 (function(){
-  const BASE = 10000;
-  const KEY = 'gadm_visit_num';
-  // Each visitor gets a unique number stored in their browser
-  let myNum = parseInt(localStorage.getItem(KEY) || '0', 10);
-  if(!myNum){
-    // Assign a new visitor number: BASE + random offset to simulate real traffic
-    // Use a shared-ish incrementing value stored locally
-    const sharedKey = 'gadm_global_count';
-    let global = parseInt(localStorage.getItem(sharedKey) || '0', 10);
-    global += 1;
-    localStorage.setItem(sharedKey, global);
-    myNum = BASE + global;
-    localStorage.setItem(KEY, myNum);
-  }
   const el = document.getElementById('visit-count');
-  // Animate count up to myNum
-  const start = myNum - Math.min(20, myNum - BASE);
-  let cur = start;
-  const step = () => {
-    if(cur < myNum){
-      cur++;
-      el.textContent = cur.toLocaleString('it-IT');
-      setTimeout(()=>requestAnimationFrame(step), 40);
-    } else {
-      el.textContent = myNum.toLocaleString('it-IT');
-    }
-  };
-  requestAnimationFrame(step);
+  const SESSION_KEY = 'gadm_session_counted';
+  const BASE_OFFSET = 10000; // valore di partenza simulato
+
+  function animateCount(target) {
+    const start = Math.max(target - 20, 0);
+    let cur = start;
+    const step = () => {
+      if (cur < target) {
+        cur++;
+        el.textContent = (BASE_OFFSET + cur).toLocaleString('it-IT');
+        setTimeout(() => requestAnimationFrame(step), 40);
+      } else {
+        el.textContent = (BASE_OFFSET + cur).toLocaleString('it-IT');
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Se il visitatore ha già contato in questa sessione, mostriamo solo il valore
+  const alreadyCounted = sessionStorage.getItem(SESSION_KEY);
+
+  if (alreadyCounted) {
+    // Visitatore già contato: legge il valore attuale senza incrementare
+    fetch('https://api.counterapi.dev/v1/giuseppeantoniodemichele/visits')
+      .then(r => r.json())
+      .then(data => { animateCount(data.count || 1); })
+      .catch(() => { el.textContent = '10.001+'; });
+  } else {
+    // Nuovo visitatore: incrementa il contatore
+    fetch('https://api.counterapi.dev/v1/giuseppeantoniodemichele/visits/up')
+      .then(r => r.json())
+      .then(data => {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        animateCount(data.count || 1);
+      })
+      .catch(() => { el.textContent = '10.001+'; });
+  }
 })();
 </script>
 
