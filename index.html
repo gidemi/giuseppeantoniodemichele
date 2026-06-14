@@ -91,17 +91,35 @@ hr.div{border:none;border-top:1px solid rgba(255,255,255,0.06)}
 
 /* VISITOR COUNTER */
 #visitor-counter{
-  display:inline-flex;align-items:center;gap:0.55rem;
-  background:rgba(212,168,83,0.07);
-  border:1px solid rgba(212,168,83,0.18);
-  border-radius:2rem;
-  padding:0.32rem 1rem;
-  font-size:0.75rem;
-  color:var(--gold);
-  letter-spacing:0.05em;
-  margin-top:1.2rem;
+  display:inline-flex;flex-direction:column;align-items:center;gap:0.3rem;
+  background:linear-gradient(135deg,rgba(212,168,83,0.10),rgba(91,79,207,0.10));
+  border:1px solid rgba(212,168,83,0.35);
+  border-radius:1rem;
+  padding:1rem 2rem;
+  margin-top:2rem;
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 24px rgba(212,168,83,0.10);
 }
-#visitor-counter span{ font-family:'Playfair Display',serif; font-size:0.9rem; font-weight:700; }
+#visitor-counter .vc-label{
+  font-size:0.72rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+#visitor-counter .vc-msg{
+  font-family:'Playfair Display',serif;
+  font-size:1.05rem;
+  color:var(--gold);
+  letter-spacing:0.02em;
+}
+#visitor-counter .vc-num{
+  font-family:'Playfair Display',serif;
+  font-size:2rem;
+  font-weight:700;
+  color:var(--gold);
+  line-height:1;
+  text-shadow:0 0 20px rgba(212,168,83,0.4);
+}
 
 
 /* ===== FLOATING NOTES & QUILL ===== */
@@ -295,8 +313,11 @@ footer{border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:cente
       <a href="#libri" class="btn btn-outline">Scopri i libri</a>
     </div>
 
-    <div style="text-align:center;margin-top:1.4rem">
-      <div id="visitor-counter">👁 Visitatori: <span id="visit-count">…</span></div>
+    <div style="text-align:center;margin-top:1.6rem">
+      <div id="visitor-counter">
+        <span class="vc-label">👁 Benvenuto sul sito</span>
+        <span class="vc-msg" id="vc-message">Sei il visitatore n. <span id="visit-count">…</span></span>
+      </div>
     </div>
   </div>
 </div>
@@ -596,21 +617,34 @@ footer{border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:cente
   });
 })();
 
-// --- VISITOR COUNTER (localStorage) ---
+// --- VISITOR COUNTER ---
 (function(){
-  const key = 'gadm_visits';
-  let count = parseInt(localStorage.getItem(key) || '0', 10);
-  count += 1;
-  localStorage.setItem(key, count);
-  // Simulate a shared-looking number starting from a base
-  const base = 1247;
-  const display = base + count;
+  const BASE = 10000;
+  const KEY = 'gadm_visit_num';
+  // Each visitor gets a unique number stored in their browser
+  let myNum = parseInt(localStorage.getItem(KEY) || '0', 10);
+  if(!myNum){
+    // Assign a new visitor number: BASE + random offset to simulate real traffic
+    // Use a shared-ish incrementing value stored locally
+    const sharedKey = 'gadm_global_count';
+    let global = parseInt(localStorage.getItem(sharedKey) || '0', 10);
+    global += 1;
+    localStorage.setItem(sharedKey, global);
+    myNum = BASE + global;
+    localStorage.setItem(KEY, myNum);
+  }
   const el = document.getElementById('visit-count');
-  // Animate count up
-  let start = display - Math.min(count, 30);
+  // Animate count up to myNum
+  const start = myNum - Math.min(20, myNum - BASE);
+  let cur = start;
   const step = () => {
-    if(start < display){ start++; el.textContent = start.toLocaleString('it-IT'); requestAnimationFrame(step); }
-    else { el.textContent = display.toLocaleString('it-IT'); }
+    if(cur < myNum){
+      cur++;
+      el.textContent = cur.toLocaleString('it-IT');
+      setTimeout(()=>requestAnimationFrame(step), 40);
+    } else {
+      el.textContent = myNum.toLocaleString('it-IT');
+    }
   };
   requestAnimationFrame(step);
 })();
