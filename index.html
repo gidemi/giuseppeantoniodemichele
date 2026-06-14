@@ -64,6 +64,46 @@ section{padding:5.5rem 2rem;max-width:1080px;margin:0 auto}
 .section-intro{color:var(--muted);font-size:0.95rem;line-height:1.88;max-width:620px;margin-bottom:3rem}
 hr.div{border:none;border-top:1px solid rgba(255,255,255,0.06)}
 
+/* AUDIO BUTTON */
+#audio-btn{
+  position:fixed;top:1.1rem;right:2.5rem;z-index:200;
+  display:flex;align-items:center;gap:0.55rem;
+  background:linear-gradient(135deg,rgba(42,157,143,0.18),rgba(91,79,207,0.18));
+  border:1px solid rgba(42,157,143,0.45);
+  color:var(--teal);text-decoration:none;
+  padding:0.52rem 1.1rem;border-radius:3rem;
+  font-family:'Playfair Display',serif;font-size:0.8rem;
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  transition:all 0.35s;
+  box-shadow:0 4px 20px rgba(42,157,143,0.12);
+  border:none;
+}
+#audio-btn:hover{
+  background:linear-gradient(135deg,rgba(42,157,143,0.32),rgba(91,79,207,0.32));
+  outline:1px solid var(--teal);
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(42,157,143,0.28);
+}
+#audio-icon{ font-size:1rem; animation:audioPulse 2s ease-in-out infinite; }
+@keyframes audioPulse{0%,100%{opacity:1}50%{opacity:0.5}}
+#audio-btn.paused #audio-icon{ animation:none; opacity:0.6; }
+
+/* VISITOR COUNTER */
+#visitor-counter{
+  display:inline-flex;align-items:center;gap:0.55rem;
+  background:rgba(212,168,83,0.07);
+  border:1px solid rgba(212,168,83,0.18);
+  border-radius:2rem;
+  padding:0.32rem 1rem;
+  font-size:0.75rem;
+  color:var(--gold);
+  letter-spacing:0.05em;
+  margin-top:1.2rem;
+}
+#visitor-counter span{ font-family:'Playfair Display',serif; font-size:0.9rem; font-weight:700; }
+
+
 /* ===== FLOATING NOTES & QUILL ===== */
 #fx-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
 .fx-note{position:absolute;font-size:1.6rem;opacity:0;pointer-events:none;user-select:none;animation:noteFloat linear infinite;filter:drop-shadow(0 0 6px currentColor)}
@@ -217,6 +257,16 @@ footer{border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:cente
 </head>
 <body>
 
+
+<!-- AUDIO -->
+<audio id="bg-audio" loop preload="auto">
+  <source src="Just_My_Loneliness.mp3" type="audio/mpeg">
+</audio>
+<button id="audio-btn" aria-label="Musica di sottofondo">
+  <span id="audio-icon">🎵</span>
+  <span id="audio-label">Stop musica</span>
+</button>
+
 <nav>
   <div class="nav-logo">G. A. De Michele</div>
   <ul class="nav-links">
@@ -243,6 +293,10 @@ footer{border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:cente
     <div class="hero-cta">
       <a href="https://youtube.com/@gidemi?si=01MAi_Cjm1GJqA0l" target="_blank" class="btn btn-primary">▶ Ascolta le canzoni</a>
       <a href="#libri" class="btn btn-outline">Scopri i libri</a>
+    </div>
+
+    <div style="text-align:center;margin-top:1.4rem">
+      <div id="visitor-counter">👁 Visitatori: <span id="visit-count">…</span></div>
     </div>
   </div>
 </div>
@@ -496,6 +550,71 @@ footer{border-top:1px solid rgba(255,255,255,0.06);padding:2rem;text-align:cente
   </g>
 </svg>
 </div>
+
+
+<script>
+// --- AUDIO AUTOPLAY ON FIRST INTERACTION ---
+(function(){
+  const audio = document.getElementById('bg-audio');
+  const btn = document.getElementById('audio-btn');
+  const icon = document.getElementById('audio-icon');
+  const label = document.getElementById('audio-label');
+  let playing = false;
+
+  function startAudio(){
+    audio.play().then(()=>{
+      playing = true;
+      icon.textContent = '🎵';
+      label.textContent = 'Stop musica';
+      btn.classList.remove('paused');
+    }).catch(()=>{});
+  }
+
+  // Try autoplay immediately
+  startAudio();
+
+  // Fallback: start on first user interaction
+  const unlock = ()=>{ if(!playing){ startAudio(); } document.removeEventListener('click', unlock); document.removeEventListener('touchstart', unlock); };
+  document.addEventListener('click', unlock, {once:true});
+  document.addEventListener('touchstart', unlock, {once:true});
+
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(playing){
+      audio.pause();
+      playing = false;
+      icon.textContent = '▶';
+      label.textContent = 'Riproduci';
+      btn.classList.add('paused');
+    } else {
+      audio.play();
+      playing = true;
+      icon.textContent = '🎵';
+      label.textContent = 'Stop musica';
+      btn.classList.remove('paused');
+    }
+  });
+})();
+
+// --- VISITOR COUNTER (localStorage) ---
+(function(){
+  const key = 'gadm_visits';
+  let count = parseInt(localStorage.getItem(key) || '0', 10);
+  count += 1;
+  localStorage.setItem(key, count);
+  // Simulate a shared-looking number starting from a base
+  const base = 1247;
+  const display = base + count;
+  const el = document.getElementById('visit-count');
+  // Animate count up
+  let start = display - Math.min(count, 30);
+  const step = () => {
+    if(start < display){ start++; el.textContent = start.toLocaleString('it-IT'); requestAnimationFrame(step); }
+    else { el.textContent = display.toLocaleString('it-IT'); }
+  };
+  requestAnimationFrame(step);
+})();
+</script>
 
 <script>
 (function(){
