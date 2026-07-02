@@ -44,6 +44,21 @@ nav{position:sticky;top:0;z-index:100;background:rgba(15,12,26,0.92);backdrop-fi
 .hero-name{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,7.5vw,5.6rem);line-height:1.04;margin-bottom:0.7rem;background:linear-gradient(135deg,#F5F0E8 25%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-subtitle{font-size:1.08rem;color:var(--muted);font-style:italic;margin-bottom:2.8rem;font-family:'Playfair Display',serif;line-height:1.6}
 .hero-tags{display:flex;gap:0.9rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+  .music-circus-banner {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 1rem;
+    margin: 1.5rem auto 2.5rem auto;
+    display: block;
+    box-shadow: 0 8px 32px rgba(212, 168, 83, 0.15);
+    border: 1px solid rgba(212, 168, 83, 0.25);
+    transition: transform 0.3s;
+}
+
+.music-circus-banner:hover {
+    transform: translateY(-3px);
+}
 .tag{padding:0.38rem 1.15rem;border:1px solid;border-radius:2rem;font-size:0.77rem;letter-spacing:0.05em}
 .tag-music{border-color:var(--rose);color:var(--rose)}
 .tag-books{border-color:var(--teal);color:var(--teal)}
